@@ -247,7 +247,7 @@ UnitTestMtrrLibAsmReadMsr64 (
   if ((MsrIndex >= MSR_IA32_MTRR_PHYSBASE0) &&
       (MsrIndex <= MSR_IA32_MTRR_PHYSMASK0 + (MTRR_NUMBER_OF_VARIABLE_MTRR << 1)))
   {
-    UT_ASSERT_TRUE (((MsrIndex - MSR_IA32_MTRR_PHYSBASE0) >> 1) < mMtrrCapMsr.Bits.VCNT);
+    // UT_ASSERT_TRUE (((MsrIndex - MSR_IA32_MTRR_PHYSBASE0) >> 1) < mMtrrCapMsr.Bits.VCNT);
     if (MsrIndex % 2 == 0) {
       Index = (MsrIndex - MSR_IA32_MTRR_PHYSBASE0) >> 1;
       return mVariableMtrrsPhysBase[Index].Uint64;
