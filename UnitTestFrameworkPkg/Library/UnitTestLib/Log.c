@@ -198,8 +198,16 @@ UnitTestLog (
   AsciiVSPrint (LogString, sizeof (LogString), NewFormatString, Marker);
   VA_END (Marker);
 
+
+  DEBUG ((DEBUG_INFO, "%a", LogString));
+
   //
   // Finally, add the string to the log.
   //
-  AddStringToUnitTestLog (((UNIT_TEST_FRAMEWORK *)FrameworkHandle)->CurrentTest, LogString);
+  // AddStringToUnitTestLog (((UNIT_TEST_FRAMEWORK *)FrameworkHandle)->CurrentTest, LogString);
+
+  // //
+  // // Finally, add the string to the log.
+  // //
+  // AddStringToUnitTestLog (((UNIT_TEST_FRAMEWORK *)FrameworkHandle)->CurrentTest, LogString);
 }

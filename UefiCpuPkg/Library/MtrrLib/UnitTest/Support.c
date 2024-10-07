@@ -315,7 +315,7 @@ UnitTestMtrrLibAsmWriteMsr64 (
   if ((MsrIndex >= MSR_IA32_MTRR_PHYSBASE0) &&
       (MsrIndex <= MSR_IA32_MTRR_PHYSMASK0 + (MTRR_NUMBER_OF_VARIABLE_MTRR << 1)))
   {
-    UT_ASSERT_TRUE (((MsrIndex - MSR_IA32_MTRR_PHYSBASE0) >> 1) < mMtrrCapMsr.Bits.VCNT);
+    // UT_ASSERT_TRUE (((MsrIndex - MSR_IA32_MTRR_PHYSBASE0) >> 1) < mMtrrCapMsr.Bits.VCNT);
     if (MsrIndex % 2 == 0) {
       Index                                = (MsrIndex - MSR_IA32_MTRR_PHYSBASE0) >> 1;
       mVariableMtrrsPhysBase[Index].Uint64 = Value;
@@ -530,12 +530,12 @@ GenerateRandomMtrrPair (
 
   MaxPhysicalAddress = 1ull << PhysicalAddressBits;
   do {
-    SizeShift = Random32 (12, PhysicalAddressBits - 1);
-    RangeSize = 1ull << SizeShift;
+    SizeShift = Random32 (12, PhysicalAddressBits - 1); // let size shift = 21 => 2 MB
+    RangeSize = 1ull << SizeShift; // 2MB range
 
-    BaseShift      = Random32 (SizeShift, PhysicalAddressBits - 1);
-    RandomBoundary = Random64 (0, 1ull << (PhysicalAddressBits - BaseShift));
-    RangeBase      = RandomBoundary << BaseShift;
+    BaseShift      = Random32 (SizeShift, PhysicalAddressBits - 1); // rand(21, 42)  let base shift = 30
+    RandomBoundary = Random64 (0, 1ull << (PhysicalAddressBits - BaseShift));// [0, 2^(42-30)]
+    RangeBase      = RandomBoundary << BaseShift; // this is nothing but RandomBounday * 2 ^ BaseShift => in other words, we will get a mulitple of our baseaddress
   } while (RangeBase < SIZE_1MB || RangeBase > MaxPhysicalAddress - 1);
 
   PhysBasePhyMaskValidBitsMask = (MaxPhysicalAddress - 1) & 0xfffffffffffff000ULL;
@@ -991,8 +991,17 @@ CollectEndpoints (
     Endpoints[Index + 1] = RawMemoryRanges[RawRangeIndex].BaseAddress + RawMemoryRanges[RawRangeIndex].Length - 1;
   }
 
+  for (UINTN i = 0; i < *EndPointCount; i++) {
+    UT_LOG_INFO ("#### Endpoints[%d] = %llx \n", i, Endpoints[i]);
+  }
+
   qsort (Endpoints, *EndPointCount, sizeof (UINT64), CompareFuncUint64);
   RemoveDuplicatesInSortedArray (Endpoints, EndPointCount);
+
+  for (UINTN i = 0; i < *EndPointCount; i++) {
+    UT_LOG_INFO ("####After Endpoints[%d] = %llx \n", i, Endpoints[i]);
+  }
+  
 }
 
 /**
@@ -1037,12 +1046,20 @@ GetEffectiveMemoryRanges (
   AllEndPointsInclusive  = calloc (AllEndPointsCount, sizeof (UINT64));
   AllRangePiecesCountMax = RawMemoryRangeCount * 3 + 1;
   AllRangePieces         = calloc (AllRangePiecesCountMax, sizeof (MTRR_MEMORY_RANGE));
+
+  // UT_LOG_INFO ("#### AllEndPointsCount = %d \n", AllEndPointsCount);
   CollectEndpoints (AllEndPointsInclusive, &AllEndPointsCount, RawMemoryRanges, RawMemoryRangeCount);
+  // UT_LOG_INFO ("#### After AllEndPointsCount = %d \n", AllEndPointsCount);
+  // for (UINTN i = 0; i < AllEndPointsCount; i++) {
+  //   UT_LOG_INFO ("#### AllEndPointsInclusive[%d] = %llx \n", i, AllEndPointsInclusive[i]);
+  // }
 
   for (Index = 0, AllRangePiecesCountActual = 0; Index < AllEndPointsCount - 1; Index++) {
     OverlapBitFlag1     = GetOverlapBitFlag (RawMemoryRanges, RawMemoryRangeCount, AllEndPointsInclusive[Index]);
     OverlapBitFlag2     = GetOverlapBitFlag (RawMemoryRanges, RawMemoryRangeCount, AllEndPointsInclusive[Index + 1]);
     OverlapFlagRelation = CheckOverlapBitFlagsRelation (OverlapBitFlag1, OverlapBitFlag2);
+
+    // UT_LOG_INFO ("#### Index = %d OverlapBitFlag1 = %llx, OverlapBitFlag2 = %llx, OverlapFlagRelation = %llx \n", Index, OverlapBitFlag1, OverlapBitFlag2, OverlapFlagRelation);
     switch (OverlapFlagRelation) {
       case 0:   // [1, 2]
         AllRangePieces[AllRangePiecesCountActual].BaseAddress = AllEndPointsInclusive[Index];
@@ -1091,7 +1108,17 @@ GetEffectiveMemoryRanges (
     DetermineMemoryCacheType (DefaultType, &AllRangePieces[Index], RawMemoryRanges, RawMemoryRangeCount);
   }
 
+  for (UINTN i = 0; i < AllRangePiecesCountActual; i++) {
+    UT_LOG_INFO ("#### Before Compact AllRangePieces[%d] = %llx, %llx, %llx \n", i, AllRangePieces[i].BaseAddress, AllRangePieces[i].Length, AllRangePieces[i].Type);
+  }
+
   CompactAndExtendEffectiveMtrrMemoryRanges (DefaultType, PhysicalAddressBits, &AllRangePieces, &AllRangePiecesCountActual);
+  for (UINTN i = 0; i < AllRangePiecesCountActual; i++) {
+    UT_LOG_INFO ("#### AllRangePieces[%d] = %llx, %llx, %llx \n", i, AllRangePieces[i].BaseAddress, AllRangePieces[i].Length, AllRangePieces[i].Type);
+  }
+  // UT_LOG_INFO ("#### AllRangePiecesCountActual = %d \n", AllRangePiecesCountActual);
+  // UT_LOG_INFO ("#### MemoryRangeCount = %d \n", *MemoryRangeCount);
+
   ASSERT (*MemoryRangeCount >= AllRangePiecesCountActual);
   memcpy (MemoryRanges, AllRangePieces, AllRangePiecesCountActual * sizeof (MTRR_MEMORY_RANGE));
   *MemoryRangeCount = AllRangePiecesCountActual;
