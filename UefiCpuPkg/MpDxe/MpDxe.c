@@ -4,6 +4,7 @@
   Copyright (c) 2008 - 2022, Intel Corporation. All rights reserved.<BR>
   SPDX-License-Identifier: BSD-2-Clause-Patent
 
+  MU_CHANGE: WHOLE FILE
 **/
 
 #include "MpDxe.h"
@@ -882,3 +883,15 @@ InitializeMpSupport (
 }
 
 // MU_CHANGE End - CodeQL Change - unguardednullreturndereference
+
+EFI_STATUS
+EFIAPI
+InitializeMp (
+  IN EFI_HANDLE        ImageHandle,
+  IN EFI_SYSTEM_TABLE  *SystemTable
+  )
+{
+  InitializeMpSupport ();
+
+  return EFI_SUCCESS;
+}

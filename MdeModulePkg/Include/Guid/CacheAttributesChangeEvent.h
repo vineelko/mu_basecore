@@ -3,6 +3,8 @@
 
   Copyright (c) Microsoft Corporation.
   SPDX-License-Identifier: BSD-2-Clause-Patent
+
+  MU_CHANGE: WHOLE FILE
 **/
 
 #ifndef CACHE_ATTRIBUTES_CHANGE_EVENT_H_
