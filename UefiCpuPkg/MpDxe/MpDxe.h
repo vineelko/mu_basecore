@@ -7,8 +7,8 @@
   MU_CHANGE: WHOLE FILE
 **/
 
-#ifndef _MP_DXE_H_
-#define _MP_DXE_H_
+#ifndef MP_DXE_H_
+#define MP_DXE_H_
 
 #include <PiDxe.h>
 
@@ -490,4 +490,4 @@ WhoAmI (
   OUT UINTN                    *ProcessorNumber
   );
 
-#endif // _MP_DXE_H_
+#endif // MP_DXE_H_
