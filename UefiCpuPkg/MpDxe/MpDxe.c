@@ -799,13 +799,12 @@ InitializeMpExceptionHandlers (
   VOID
   )
 {
-
   // MU_CHANGE START - These modes are only for testing - Commenting to untangle
   // the dependency on DebugExceptionHandler/PageFaultExceptionHandler
-  // //
-  // // Enable non-stop mode for #PF triggered by Heap Guard or NULL Pointer //
+  //
+  // Enable non-stop mode for #PF triggered by Heap Guard or NULL Pointer
   // Detection.
-  // //
+  //
   // if (HEAP_GUARD_NONSTOP_MODE || NULL_DETECTION_NONSTOP_MODE) {
   //   RegisterCpuInterruptHandler (EXCEPT_IA32_DEBUG, DebugExceptionHandler);
   //   RegisterCpuInterruptHandler (EXCEPT_IA32_PAGE_FAULT,
